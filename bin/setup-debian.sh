@@ -8,6 +8,7 @@
 # core functions
 ############################################################
 
+# usage: check_install package-name human-name
 function check_install {
 	if [ -z "`which "$1" 2>/dev/null`" ]
 	then
@@ -1267,6 +1268,46 @@ function install_mongo_db {
 	print_warn "mongodb installed and started"
 }
 
+function install_chef {
+	echo "deb http://apt.opscode.com/ `lsb_release -cs`-0.10 main" | tee /etc/apt/sources.list.d/opscode.list
+
+	mkdir -p /etc/apt/trusted.gpg.d || die "Unable to create directory"
+
+	gpg --keyserver keys.gnupg.net --recv-keys 83EF826A
+	gpg --export packages@opscode.com | sudo tee /etc/apt/trusted.gpg.d/opscode-keyring.gpg > /dev/null
+
+	DEBIAN_FRONTEND=noninteractive apt-get -q -y update
+
+	# this should update keyring for opscode not sure why we do the stuff above then but
+	# in docs :)
+	apt-get install opscode-keyring
+
+	# install chef crapola
+	check_install chef chef
+	check_install chef-server chef-server
+}
+
+# chef_solo only
+function install_chef_solo {
+	echo "deb http://apt.opscode.com/ `lsb_release -cs`-0.10 main" | tee /etc/apt/sources.list.d/opscode.list
+
+	mkdir -p /etc/apt/trusted.gpg.d || die "Unable to create directory"
+
+	gpg --keyserver keys.gnupg.net --recv-keys 83EF826A
+	gpg --export packages@opscode.com | sudo tee /etc/apt/trusted.gpg.d/opscode-keyring.gpg > /dev/null
+
+	DEBIAN_FRONTEND=noninteractive apt-get -q -y update
+
+	# this should update keyring for opscode not sure why we do the stuff above then but
+	# in docs :)
+	apt-get install opscode-keyring
+
+	# install chef crapola
+	check_install chef chef
+
+	/etc/init.d/chef-client stop
+	update-rc.d -f chef-client remove
+}
 
 ########################################################################
 # START OF PROGRAM
@@ -1347,6 +1388,12 @@ mongodb)
 dancer_app)
 	setup_dancer_app $2 $3
 	;;
+chef)
+	install_chef
+	;;
+chef_solo)
+	install_chef_solo
+	;;
 system)
 	update_timezone
 	remove_unneeded
@@ -1394,6 +1441,7 @@ system)
 	echo '  - mongodb                (Install MongoDB)'
 	echo '  - dancer_app [???] [TBD] (Setup Dancer app (create home dir, and ctrl scripts)'
 	echo '  - chef                   (Install chef)'
+	echo '  - chef_solo              (Install and setup chef solo)'
 	echo '  '
 	;;
 esac
