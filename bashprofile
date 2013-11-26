@@ -1,0 +1,3 @@
+if [ -e /etc/debian ]; then 
+	alias 'apt-get installed'='dpkg --get-selections'
+fi

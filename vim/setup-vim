@@ -1,0 +1,33 @@
+#!/bin/bash
+
+BASE_RC="vimrc"
+BASE_DIR="vim"
+
+RC=".vimrc"
+DIR=".vim"
+
+DESTRC="$HOME/$RC"
+DESTDIR="$HOME/$DIR"
+
+if [ -r "$DESTRC" ]; then
+    echo "'$RC' exists doing nothing"
+    exit 1
+fi
+
+if [ -r "$DESTDIR" ]; then
+    echo "'$DIR' exists doing nothing"
+    exit 1
+fi
+
+#
+# add backup/copy over
+#
+
+echo "installing $DESTRC"
+cp $BASE_RC $DESTRC
+
+echo "installing $DESTDIR"
+cp -r $BASE_DIR $DESTDIR
+
+echo "Make sure to run vim and :BundleInstall"
+exit
